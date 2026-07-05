@@ -5,21 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-> **Note:** From this point forward, changelog entries are managed automatically
-> by [Python Semantic Release](https://python-semantic-release.readthedocs.io/).
-> Do not edit entries below the `[Unreleased]` section manually.
+> **Note:** Release entries below the marker are managed automatically by
+> [Python Semantic Release](https://python-semantic-release.readthedocs.io/) -
+> do not edit them by hand.
 
 <!-- PSR inserts new releases above this line -->
 
 ## v0.1.0 (2026-07-05)
 
-### Features
-
-- Initial public release
-  ([`d088fb1`](https://github.com/TrifoN-off/alchemiq/commit/d088fb162f8fb127416330a3644c01856beb1fc3))
-
-
-## [0.1.0] - 2026-06-29
+Initial public release
+([`d088fb1`](https://github.com/TrifoN-off/alchemiq/commit/d088fb162f8fb127416330a3644c01856beb1fc3)).
 
 ### Added
 
@@ -85,5 +80,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   no extra deps) for single-app and monorepo layouts via `.tmpl` templates.
 - **Health checks** - `check_health()` returning `HealthReport` /
   `ComponentHealth`.
-
-[0.1.0]: https://github.com/TrifoN-off/alchemiq/releases/tag/v0.1.0
