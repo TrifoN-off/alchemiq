@@ -1,0 +1,46 @@
+"""Shared test fixtures (ClickHouse).
+
+The ``ch`` fixture configures the alchemiq ClickHouse client against a test
+server. Point ``TEST_CLICKHOUSE_HOST`` at a disposable ClickHouse (the
+docker-compose service works). Async tests that use it must be marked
+``@pytest.mark.anyio`` (the ``anyio`` dev dependency provides the plugin).
+"""
+
+from __future__ import annotations
+
+import os
+from collections.abc import AsyncIterator
+
+import pytest
+
+from alchemiq.clickhouse import (
+    configure_clickhouse,
+    create_clickhouse_tables,
+    dispose_clickhouse,
+    drop_clickhouse_tables,
+)
+
+
+@pytest.fixture(scope="session")
+def anyio_backend() -> str:
+    return "asyncio"
+
+
+@pytest.fixture
+async def ch() -> AsyncIterator[None]:
+    host = os.environ.get("TEST_CLICKHOUSE_HOST", "")
+    if not host:
+        pytest.skip("set TEST_CLICKHOUSE_HOST to run ClickHouse tests")
+    configure_clickhouse(
+        host=host,
+        port=int(os.environ.get("TEST_CLICKHOUSE_PORT", "8123")),
+        username=os.environ.get("TEST_CLICKHOUSE_USER", "app"),
+        password=os.environ.get("TEST_CLICKHOUSE_PASSWORD", "app"),
+        database=os.environ.get("TEST_CLICKHOUSE_DB", "app"),
+    )
+    await create_clickhouse_tables()
+    try:
+        yield
+    finally:
+        await drop_clickhouse_tables()
+        await dispose_clickhouse()

@@ -1,0 +1,17 @@
+"""Smoke test for the base model - proves it maps without needing a server."""
+
+from __future__ import annotations
+
+from __ALCHEMIQ_MODULE__.domain.models import Event
+
+
+def test_event_is_a_model() -> None:
+    # The class maps without error and exposes its declared fields.
+    assert hasattr(Event, "__alchemiq_fields__")
+    assert {"event_time", "user_id", "name", "value"} <= set(Event.__alchemiq_fields__)
+
+
+def test_event_maps_columns() -> None:
+    # The mapped MergeTree table carries every declared column.
+    cols = set(Event.__table__.columns.keys())
+    assert {"event_time", "user_id", "name", "value"} <= cols

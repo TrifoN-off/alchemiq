@@ -1,0 +1,39 @@
+"""FastAPI application factory (ClickHouse).
+
+Boots a ClickHouse client lifespan and the health router. Mount your own
+routers from ``adapters/http`` where indicated below.
+"""
+
+from __future__ import annotations
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+from alchemiq.clickhouse import configure_clickhouse, dispose_clickhouse
+from alchemiq.fastapi import health_router, install_exception_handlers
+
+from __ALCHEMIQ_MODULE__ import config
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    configure_clickhouse(**config.CLICKHOUSE)
+    try:
+        yield
+    finally:
+        await dispose_clickhouse()
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(title="__ALCHEMIQ_NAME__", lifespan=_lifespan)
+    install_exception_handlers(app)
+    app.include_router(health_router())
+    # Mount your routers here, e.g.:
+    #   from __ALCHEMIQ_MODULE__.adapters.http import events
+    #   app.include_router(events.router)
+    return app
+
+
+app = create_app()

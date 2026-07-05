@@ -1,0 +1,36 @@
+"""FastStream application (ClickHouse).
+
+Boots a ClickHouse client lifespan. Register your subscribers from
+``adapters/messaging`` where indicated below.
+"""
+
+from __future__ import annotations
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from typing import Any
+
+from faststream import FastStream
+from faststream.rabbit import RabbitBroker
+
+from alchemiq.clickhouse import configure_clickhouse, dispose_clickhouse
+
+from __ALCHEMIQ_MODULE__ import config
+
+broker = RabbitBroker(config.BROKER_URL)
+
+
+@asynccontextmanager
+async def _lifespan(*_args: Any) -> AsyncIterator[None]:
+    configure_clickhouse(**config.CLICKHOUSE)
+    try:
+        yield
+    finally:
+        await dispose_clickhouse()
+
+
+app = FastStream(broker, lifespan=_lifespan)
+
+# Register your subscribers here, e.g.:
+#   from __ALCHEMIQ_MODULE__.adapters.messaging import handlers
+#   handlers.register(broker)

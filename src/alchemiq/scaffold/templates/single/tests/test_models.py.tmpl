@@ -1,0 +1,22 @@
+"""Smoke test for the base model - proves it maps and declares its field surface."""
+
+from __future__ import annotations
+
+from __ALCHEMIQ_MODULE__.domain.models import Note, Status
+
+
+def test_note_is_a_model() -> None:
+    # The class maps without error and exposes its declared fields.
+    assert hasattr(Note, "__alchemiq_fields__")
+    assert "author_email" in Note.__alchemiq_fields__
+    assert Status.PUBLISHED.value == "published"
+
+
+def test_note_meta_toggles_inject_columns() -> None:
+    # The mapped table carries the declared columns plus the Meta-injected ones.
+    cols = set(Note.__table__.columns.keys())
+    assert {"id", "title", "slug", "author_email", "price"} <= cols
+    assert "created_at" in cols  # Meta.timestamps
+    assert "updated_at" in cols  # Meta.timestamps
+    assert "deleted_at" in cols  # Meta.soft_delete
+    assert "_version" in cols  # Meta.versioned

@@ -1,0 +1,17 @@
+"""Repository layer - data access, one repository per aggregate.
+
+alchemiq already gives you a full repository per model: instantiate it ad-hoc
+with ``Repository(Note)`` or subclass to attach behaviour (query helpers,
+caching) under a name the rest of the app can depend on:
+
+    from alchemiq import Repository
+
+    from __ALCHEMIQ_MODULE__.domain.models import Note
+
+
+    class NoteRepository(Repository[Note]):
+        pass  # add query helpers / cache settings here
+
+Repositories run inside whatever ``UnitOfWork`` (or ambient session) the
+caller has opened - they never open their own transaction.
+"""

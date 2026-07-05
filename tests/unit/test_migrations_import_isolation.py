@@ -1,0 +1,45 @@
+import subprocess
+import sys
+
+import pytest
+
+pytestmark = pytest.mark.unit
+
+
+def test_import_alchemiq_does_not_import_alembic() -> None:
+    code = (
+        "import sys, alchemiq; "
+        "leaked = [m for m in sys.modules if m == 'alembic' or m.startswith('alembic.')]; "
+        "assert not leaked, leaked"
+    )
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+
+
+def test_import_alchemiq_migrations_does_not_import_alembic_or_ch() -> None:
+    code = (
+        "import sys, alchemiq.migrations; "
+        "bad = [m for m in sys.modules "
+        "if m.startswith(('alembic', 'clickhouse_connect', 'clickhouse_sqlalchemy'))]; "
+        "assert not bad, bad"
+    )
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+
+
+def test_import_runner_does_not_import_clickhouse_sqlalchemy() -> None:
+    code = (
+        "import sys, alchemiq.migrations.clickhouse.runner; "
+        "bad = [m for m in sys.modules if m.startswith('clickhouse_sqlalchemy')]; "
+        "assert not bad, bad"
+    )
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+
+
+def test_migration_error_is_persistence_error() -> None:
+    from alchemiq.exceptions import PersistenceError
+    from alchemiq.migrations.errors import MigrationConfigError, MigrationError
+
+    assert issubclass(MigrationError, PersistenceError)
+    assert issubclass(MigrationConfigError, MigrationError)

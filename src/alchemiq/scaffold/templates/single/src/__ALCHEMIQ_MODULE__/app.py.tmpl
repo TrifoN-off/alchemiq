@@ -1,0 +1,25 @@
+"""FastAPI application factory.
+
+Boots with the alchemiq engine lifespan and the health router. Mount your own
+routers from ``adapters/http`` where indicated below.
+"""
+
+from __future__ import annotations
+
+from alchemiq.fastapi import health_router, install_exception_handlers, lifespan
+from fastapi import FastAPI
+
+from __ALCHEMIQ_MODULE__ import config
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(title="__ALCHEMIQ_NAME__", lifespan=lifespan(config.DATABASE_DSN))
+    install_exception_handlers(app)
+    app.include_router(health_router())
+    # Mount your routers here, e.g.:
+    #   from __ALCHEMIQ_MODULE__.adapters.http import notes
+    #   app.include_router(notes.router)
+    return app
+
+
+app = create_app()

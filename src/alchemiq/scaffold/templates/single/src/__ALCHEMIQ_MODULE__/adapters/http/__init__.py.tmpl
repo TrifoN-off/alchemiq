@@ -1,0 +1,19 @@
+"""HTTP adapters - FastAPI routers that call use_cases.
+
+Inject alchemiq's session/UoW/repository providers via ``Depends``:
+
+    from fastapi import APIRouter, Depends
+
+    from alchemiq import UnitOfWork
+    from alchemiq.fastapi import unit_of_work
+
+    router = APIRouter(prefix="/notes", tags=["notes"])
+
+
+    @router.post("")
+    async def create(data: dict, uow: UnitOfWork = Depends(unit_of_work)) -> dict:
+        # call a use_case here
+        return {"ok": True}
+
+Mount the router in ``app.py`` via ``app.include_router(router)``.
+"""

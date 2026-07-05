@@ -1,0 +1,28 @@
+"""Domain models - ClickHouse variant.
+
+``Event`` is a worked example of an alchemiq ClickHouse model (a MergeTree table).
+ClickHouse is append-oriented: there is no PostgreSQL-style UnitOfWork transaction;
+write through the ClickHouse repository instead. Replace with your own model(s).
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+
+from alchemiq.clickhouse import (
+    ClickHouseModel,
+    DateTime64,
+    LowCardinality,
+    MergeTree,
+    UInt64,
+)
+
+
+class Event(ClickHouseModel):
+    event_time: datetime = DateTime64(3)  # primary time dimension (ORDER BY)
+    user_id: UInt64  # unsigned 64-bit
+    name: str = LowCardinality()  # dictionary-encoded LowCardinality(String)
+    value: float  # Float64 metric
+
+    class Meta:
+        engine = MergeTree(order_by=("event_time",))

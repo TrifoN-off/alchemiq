@@ -1,0 +1,35 @@
+"""Shared test fixtures.
+
+The ``db`` fixture configures the alchemiq engine against a test database.
+Point ``TEST_DATABASE_DSN`` at a disposable Postgres (the docker-compose
+service works). Async tests that use it must be marked ``@pytest.mark.anyio``
+(the ``anyio`` dev dependency provides the pytest plugin).
+"""
+
+from __future__ import annotations
+
+import os
+from collections.abc import AsyncIterator
+
+import pytest
+
+import alchemiq
+
+
+@pytest.fixture(scope="session")
+def anyio_backend() -> str:
+    return "asyncio"
+
+
+@pytest.fixture
+async def db() -> AsyncIterator[None]:
+    dsn = os.environ.get("TEST_DATABASE_DSN", os.environ.get("DATABASE_DSN", ""))
+    if not dsn:
+        pytest.skip("set TEST_DATABASE_DSN to run database tests")
+    alchemiq.configure(dsn)
+    await alchemiq.create_all()
+    try:
+        yield
+    finally:
+        await alchemiq.drop_all()
+        await alchemiq.dispose()

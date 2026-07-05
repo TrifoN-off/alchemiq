@@ -1,0 +1,40 @@
+# __ALCHEMIQ_NAME__
+
+Scaffolded with `alchemiq init`. Layered: `domain -> repositories -> services -> use_cases -> adapters`.
+
+## Run
+
+```bash
+uv sync
+cp __ALCHEMIQ_ENV_FILE__.example __ALCHEMIQ_ENV_FILE__   # fill in credentials if needed
+# alchemiq:block docker
+docker compose up -d                       # infrastructure  # alchemiq:ifnot monorepo
+docker compose -f ../../docker-compose.yml up -d   # workspace-root infrastructure  # alchemiq:if monorepo
+# alchemiq:endblock
+uv run --env-file __ALCHEMIQ_ENV_FILE__ alchemiq makemigrations -m init
+uv run --env-file __ALCHEMIQ_ENV_FILE__ alchemiq migrate
+uv run --env-file __ALCHEMIQ_ENV_FILE__ uvicorn __ALCHEMIQ_MODULE__.app:app --reload    # http://localhost:8000/health/ready  # alchemiq:if fastapi
+uv run --env-file __ALCHEMIQ_ENV_FILE__ faststream run __ALCHEMIQ_MODULE__.broker:app   # broker consumer  # alchemiq:if faststream
+```
+
+Nothing loads the env file implicitly - the `uv run --env-file` prefix injects it
+and runs each command inside the project venv (installed CLIs such as
+`alchemiq` are not on your PATH otherwise).
+
+## Test
+
+```bash
+uv run pytest
+```
+
+## Layout
+
+- `domain/` - models (the base `Note` model shows the field surface) + value objects  # alchemiq:if postgres
+- `domain/` - models (the base `Event` model shows the ClickHouse surface) + value objects  # alchemiq:if clickhouse
+- `repositories/` - data access (alchemiq `Repository` per aggregate)
+- `services/` - domain logic over repositories
+- `use_cases/` - application orchestration; the `UnitOfWork` boundary; event publishing
+- `adapters/http/` - FastAPI routers  # alchemiq:if fastapi
+- `adapters/messaging/` - FastStream subscribers  # alchemiq:if faststream
+
+Each package's `__init__.py` documents what belongs there and shows the recommended pattern.

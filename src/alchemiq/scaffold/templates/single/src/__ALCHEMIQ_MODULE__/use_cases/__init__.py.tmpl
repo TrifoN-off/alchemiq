@@ -1,0 +1,25 @@
+"""Use-case layer - application orchestration; the UnitOfWork boundary.
+
+One use_case per business operation. It opens a UnitOfWork (repositories
+created inside the block share its session), wires services, and (optionally)
+publishes a domain event after commit:
+
+    from alchemiq import Repository, UnitOfWork
+
+    from __ALCHEMIQ_MODULE__.domain.models import Note
+    from __ALCHEMIQ_MODULE__.services import NoteService
+
+
+    async def publish_note(note_id: int) -> Note:
+        async with UnitOfWork():
+            service = NoteService(Repository(Note))
+            note = await service.publish(note_id)
+        # After commit, notify other services. Two options:
+        #   1. Direct broker publish - simplest:
+        #        from __ALCHEMIQ_MODULE__.broker import broker
+        #        await broker.publish({"note_id": note.id}, "notes.published")
+        #   2. Transactional outbox + Relay - Meta.outbox=True on the model
+        #      captures events in the same transaction and a Relay ships them;
+        #      delivery survives crashes. Stronger guarantee.
+        return note
+"""

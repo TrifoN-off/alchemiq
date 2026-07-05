@@ -1,0 +1,19 @@
+"""Service layer - domain logic over repositories.
+
+A service holds business rules that operate on one or more repositories. It is
+stateless and transaction-agnostic (the use_case owns the transaction):
+
+    from alchemiq import Repository
+
+    from __ALCHEMIQ_MODULE__.domain.models import Note, Status
+
+
+    class NoteService:
+        def __init__(self, notes: Repository[Note]) -> None:
+            self._notes = notes
+
+        async def publish(self, note_id: int) -> Note:
+            note = await self._notes.get(id=note_id)
+            # ...enforce invariants here...
+            return await self._notes.update(note_id, status=Status.PUBLISHED)
+"""

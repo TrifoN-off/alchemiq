@@ -1,0 +1,35 @@
+# __ALCHEMIQ_ROOT__
+
+A uv-workspace monorepo scaffolded with `alchemiq init --monorepo`. Each service
+under `services/` is independent and layered (`domain -> repositories -> services ->
+use_cases -> adapters`); shared event contracts live in `packages/shared`.
+
+## Run
+
+```bash
+uv sync --all-packages
+cp .env.example .env                       # fill in credentials if needed
+docker compose up -d                       # infrastructure  # alchemiq:if docker
+# per service, from the workspace root:
+cd services/<name>
+uv run --env-file ../../.env alchemiq makemigrations -m init
+uv run --env-file ../../.env alchemiq migrate
+uv run --env-file ../../.env uvicorn <module>.app:app --reload    # FastAPI dev server  # alchemiq:if fastapi
+uv run --env-file ../../.env faststream run <module>.broker:app   # broker consumer  # alchemiq:if faststream
+```
+
+Nothing loads `.env` implicitly - the `uv run --env-file ../../.env` prefix
+injects the workspace-root `.env` and runs each command inside the workspace
+venv (installed CLIs such as `alchemiq` are not on your PATH otherwise).
+
+# alchemiq:block postgres
+Each Postgres-backed service owns a database named after its module;
+`docker/postgres-init.sh` creates them on the postgres container's first boot
+(delete the `postgres-data` volume to re-run it).
+# alchemiq:endblock
+
+## Test
+
+```bash
+uv run pytest services/<name>/tests
+```

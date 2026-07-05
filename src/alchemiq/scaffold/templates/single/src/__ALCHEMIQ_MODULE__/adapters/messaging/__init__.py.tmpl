@@ -1,0 +1,21 @@
+"""Messaging adapters - FastStream subscribers that call use_cases.
+
+The same alchemiq providers inject via ``faststream.Depends``:
+
+    from faststream import Depends
+    from faststream.rabbit import RabbitBroker
+
+    from alchemiq import UnitOfWork
+    from alchemiq.faststream import unit_of_work
+
+
+    def register(broker: RabbitBroker) -> None:
+        @broker.subscriber("notes.created")
+        async def on_note_created(
+            event: dict, uow: UnitOfWork = Depends(unit_of_work)
+        ) -> None:
+            # call a use_case here; writes go through uow and auto-capture to outbox
+            ...
+
+Call ``register(broker)`` from ``broker.py``.
+"""

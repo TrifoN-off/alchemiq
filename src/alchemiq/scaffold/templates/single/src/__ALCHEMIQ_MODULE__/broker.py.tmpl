@@ -1,0 +1,20 @@
+"""FastStream application (message broker side).
+
+Boots the alchemiq engine via the FastStream lifespan. Register your
+subscribers from ``adapters/messaging`` where indicated below.
+"""
+
+from __future__ import annotations
+
+from alchemiq.faststream import lifespan
+from faststream import FastStream
+from faststream.rabbit import RabbitBroker
+
+from __ALCHEMIQ_MODULE__ import config
+
+broker = RabbitBroker(config.BROKER_URL)
+app = FastStream(broker, lifespan=lifespan(config.DATABASE_DSN))
+
+# Register your subscribers here, e.g.:
+#   from __ALCHEMIQ_MODULE__.adapters.messaging import handlers
+#   handlers.register(broker)

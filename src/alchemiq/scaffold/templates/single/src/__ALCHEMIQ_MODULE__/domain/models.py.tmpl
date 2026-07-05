@@ -1,0 +1,50 @@
+"""Domain models - the persisted shape of your data.
+
+``Note`` is a worked example that exercises much of alchemiq's field surface.
+Replace it with your own model(s); keep one module so ``[tool.alchemiq].models``
+can import it.
+"""
+
+from __future__ import annotations
+
+import enum
+
+from alchemiq import Model
+from alchemiq.types import (
+    JSON,
+    PK,
+    Array,
+    DateTimeTz,
+    Email,
+    Enum,
+    Maybe,
+    Money,
+    Slug,
+)
+
+
+class Status(enum.Enum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+
+
+class Note(Model):
+    id: PK[int]  # auto-increment PK (UUID7 / NanoID also available)
+    title: str  # plain column
+    slug: Slug  # validated url-safe slug
+    author_email: Email  # validated, lowercased on assignment
+    price: Money  # stored as integer minor units, reads as Decimal
+    tags: Array[str]  # PostgreSQL ARRAY column
+    payload: JSON  # JSON/JSONB column
+    status: Enum[Status]  # PostgreSQL ENUM type
+    subtitle: Maybe[str]  # NULL-safe optional: assign Some(...) / Nothing
+    published_at: DateTimeTz  # timezone-aware datetime
+
+    class Meta:
+        timestamps = True  # adds created_at / updated_at
+        soft_delete = True  # adds deleted_at; reads filter it out
+        versioned = True  # optimistic locking via _version
+        # Captured events accumulate in the outbox table until a Relay worker
+        # drains them - see the "Outbox and relay" guide. Without a Relay the
+        # rows simply pile up (writes still succeed).
+        outbox = True  # capture domain events to the outbox table

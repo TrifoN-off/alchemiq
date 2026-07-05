@@ -1,0 +1,49 @@
+services:
+# alchemiq:block postgres
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+    ports: ["5432:5432"]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Creates one database per Postgres-backed service on first boot.
+      - ./docker/postgres-init.sh:/docker-entrypoint-initdb.d/10-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+# alchemiq:endblock
+# alchemiq:block clickhouse
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.3
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-app}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-app}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-app}
+    ports: ["8123:8123"]
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+# alchemiq:endblock
+# alchemiq:block rabbitmq
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports: ["5672:5672", "15672:15672"]
+# alchemiq:endblock
+# alchemiq:block redis
+  redis:
+    image: redis:8
+    ports: ["6379:6379"]
+# alchemiq:endblock
+
+volumes:
+  postgres-data:  # alchemiq:if postgres
+  clickhouse-data:  # alchemiq:if clickhouse

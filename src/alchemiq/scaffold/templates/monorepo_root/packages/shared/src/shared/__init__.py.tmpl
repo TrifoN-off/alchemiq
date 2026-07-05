@@ -1,0 +1,22 @@
+"""Shared package - contracts every service agrees on.
+
+Put cross-service **event contracts** here so a publisher and a consumer
+(de)serialize the same shape. A typed payload doubles as documentation:
+
+    from dataclasses import dataclass
+
+
+    @dataclass(frozen=True)
+    class NoteCreated:
+        note_id: int
+        author_email: str
+
+Also a good home for shared settings and Q-filter whitelists. To consume a
+sibling's event, a service subscribes to the agreed topic and parses this
+contract:
+
+    # in some-service/src/<svc>/adapters/messaging/__init__.py
+    #   from shared import NoteCreated
+    #   @broker.subscriber("notes.created")
+    #   async def on_created(event: NoteCreated) -> None: ...
+"""

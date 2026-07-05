@@ -1,0 +1,9 @@
+#!/bin/bash
+# Runs once, on the postgres container's first boot (docker-entrypoint-initdb.d).
+# Creates one database per Postgres-backed service so services never collide.
+set -euo pipefail
+
+for db in __ALCHEMIQ_PG_DATABASES__; do
+    echo "SELECT 'CREATE DATABASE \"$db\"' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$db')\gexec" \
+        | psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB"
+done

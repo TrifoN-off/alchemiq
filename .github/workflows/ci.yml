@@ -1,0 +1,100 @@
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Sync (all extras + dev)
+        run: uv sync --all-extras --group dev
+      - name: Ruff lint
+        run: uv run --no-sync ruff check
+      - name: Ruff format check
+        run: uv run --no-sync ruff format --check
+      - name: Type check (ty)
+        run: uv run --no-sync ty check
+
+  typing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Sync (all extras + dev)
+        run: uv sync --all-extras --group dev
+      - name: ty (src + typing fixture)
+        run: uv run --no-sync ty check
+      - name: mypy (consumer fixture)
+        run: uv run --no-sync mypy --follow-imports=silent tests/typing/models.py
+      - name: pyright (consumer fixture)
+        run: uv run --no-sync pyright --project tests/typing
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - name: Sync (all extras + dev)
+        run: uv sync --all-extras --group dev
+      - name: Unit tests
+        run: uv run --no-sync pytest -m unit --cov=alchemiq --cov-report=
+      - name: Integration tests (PostgreSQL + Redis)
+        run: uv run --no-sync pytest -m integration --cov=alchemiq --cov-report= --cov-append
+      # File by file: a single-process `pytest -m clickhouse` run flakes on
+      # container/event-loop isolation (session container x per-test loop under
+      # testcontainers); Ryuk's port mapping flakes in the same setup.
+      - name: ClickHouse tests (file by file)
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+        run: |
+          for f in tests/clickhouse/test_*.py; do
+            uv run --no-sync pytest "$f" --cov=alchemiq --cov-report= --cov-append -q
+          done
+      - name: Coverage gate
+        run: uv run --no-sync coverage report --fail-under=90
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Build sdist + wheel
+        run: uv build
+      - name: Twine metadata check
+        run: uvx twine check dist/*
+      - name: Assert packaged data files
+        run: |
+          python -m zipfile -l dist/*.whl | grep -q 'alchemiq/py.typed'
+          python -m zipfile -l dist/*.whl | grep -q 'alchemiq/migrations/postgres/_template/script.py.mako'
+      - name: Clean-venv core import (no extras)
+        run: |
+          uv venv --python 3.12 /tmp/ve
+          uv pip install --python /tmp/ve dist/*.whl
+          /tmp/ve/bin/python -c "import alchemiq; print(alchemiq.__version__)"
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Sync (all extras + docs)
+        run: uv sync --all-extras --group docs
+      - name: Build docs (warnings as errors)
+        run: uv run --no-sync sphinx-build -W --keep-going -b html docs docs/_build/html

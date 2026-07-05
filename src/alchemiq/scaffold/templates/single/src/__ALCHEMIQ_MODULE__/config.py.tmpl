@@ -1,0 +1,44 @@
+"""Runtime configuration read from the environment.
+
+Every value has an env var (see ``.env.example`` at the repository root).
+Keep secrets out of source.
+"""
+
+from __future__ import annotations
+
+import os
+
+
+def _require(name: str) -> str:
+    try:
+        return os.environ[name]
+    except KeyError as exc:  # fail fast at startup, not mid-request
+        raise RuntimeError(f"missing required environment variable: {name}") from exc
+
+
+# alchemiq:block postgres
+DATABASE_DSN = (
+    f"postgresql+asyncpg://{_require('POSTGRES_USER')}:{_require('POSTGRES_PASSWORD')}"
+    f"@{_require('POSTGRES_HOST')}:{os.environ.get('POSTGRES_PORT', '5432')}"
+    f"/{_require('POSTGRES_DB')}"  # alchemiq:ifnot monorepo
+    "/__ALCHEMIQ_MODULE__"  # this service's own database - see docker/postgres-init.sh  # alchemiq:if monorepo
+)
+# alchemiq:endblock
+# alchemiq:block clickhouse
+CLICKHOUSE = {
+    "host": _require("CLICKHOUSE_HOST"),
+    "port": int(os.environ.get("CLICKHOUSE_PORT", "8123")),
+    "username": _require("CLICKHOUSE_USER"),
+    "password": _require("CLICKHOUSE_PASSWORD"),
+    "database": _require("CLICKHOUSE_DB"),
+}
+# alchemiq:endblock
+BROKER_URL = os.environ.get("BROKER_URL", "amqp://guest:guest@localhost:5672/")  # alchemiq:if faststream
+REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")  # alchemiq:if redis
+# alchemiq:block redis
+# Repository caching is opt-in. To back `Repository(Model, cache=True)` (or a
+# `cache = True` Repository subclass) with Redis, call once at startup - e.g.
+# at the top of create_app() or your worker's main():
+#     from alchemiq.cache import configure_cache
+#     configure_cache(url=REDIS_URL)
+# alchemiq:endblock

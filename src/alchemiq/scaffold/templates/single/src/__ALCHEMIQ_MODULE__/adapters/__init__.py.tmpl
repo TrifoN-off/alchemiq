@@ -1,0 +1,6 @@
+"""Adapters - translate transport (HTTP, messaging) to and from use_cases.
+
+``http/`` holds FastAPI routers; ``messaging/`` holds FastStream subscribers.
+Adapters are thin: parse input, call a use_case, shape the response. No business
+logic lives here.
+"""

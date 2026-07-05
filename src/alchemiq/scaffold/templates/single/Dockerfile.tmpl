@@ -1,0 +1,31 @@
+FROM python:3.14-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
+WORKDIR /app
+
+# Dependency layer - copied first so Docker caches installs across code changes.
+# `alchemiq init` does not create uv.lock: run `uv lock` once and switch these
+# two RUNs to `uv sync --locked ...` for fully reproducible builds.
+COPY pyproject.toml ./
+RUN uv sync --no-dev --no-install-project
+
+# Application layer.
+COPY src ./src
+RUN uv sync --no-dev --no-editable
+
+ENV PATH="/app/.venv/bin:$PATH"
+
+RUN useradd --create-home appuser
+USER appuser
+
+EXPOSE 8000  # alchemiq:if fastapi
+# alchemiq:block fastapi
+# alchemiq:block faststream
+# The broker consumer runs from this same image:
+#   docker run <image> faststream run __ALCHEMIQ_MODULE__.broker:app
+# alchemiq:endblock
+# alchemiq:endblock
+# alchemiq:block faststream
+CMD ["faststream", "run", "__ALCHEMIQ_MODULE__.broker:app"]  # alchemiq:ifnot fastapi
+# alchemiq:endblock
+CMD ["uvicorn", "__ALCHEMIQ_MODULE__.app:app", "--host", "0.0.0.0", "--port", "8000"]  # alchemiq:if fastapi
