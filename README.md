@@ -98,5 +98,5 @@ Full guide and API reference: **<https://alchemiq.readthedocs.io>**
 `alchemiq` v1 does not include a visual admin, MySQL/SQLite support, synchronous mode,
 multi-database routing, audit logs, geolocation fields, or file-field storage adapters.
 
-See the [What's not in v1](https://alchemiq.readthedocs.io/guide/whats-not-in-v1.html) guide
+See the [What's not in v1](https://alchemiq.readthedocs.io/en/latest/guide/whats-not-in-v1.html) guide
 for the full list and the reasoning behind each deferral.
