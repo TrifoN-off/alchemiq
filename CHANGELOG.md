@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- PSR inserts new releases above this line -->
 
+## v0.1.0 (2026-07-05)
+
+### Features
+
+- Initial public release
+  ([`d088fb1`](https://github.com/TrifoN-off/alchemiq/commit/d088fb162f8fb127416330a3644c01856beb1fc3))
+
+
 ## [0.1.0] - 2026-06-29
 
 ### Added

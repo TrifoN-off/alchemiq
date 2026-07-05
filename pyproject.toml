@@ -52,6 +52,7 @@ Repository = "https://github.com/TrifoN-off/alchemiq"
 Issues = "https://github.com/TrifoN-off/alchemiq/issues"
 Changelog = "https://github.com/TrifoN-off/alchemiq/blob/main/CHANGELOG.md"
 
+
 [dependency-groups]
 dev = [
     "pytest>=8.0",
