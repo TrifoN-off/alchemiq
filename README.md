@@ -5,7 +5,7 @@ outbox, caching, and ClickHouse - built on SQLAlchemy 2.0.
 
 [![PyPI version](https://img.shields.io/pypi/v/alchemiq)](https://pypi.org/project/alchemiq/)
 [![Python](https://img.shields.io/pypi/pyversions/alchemiq)](https://pypi.org/project/alchemiq/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/TrifoN-off/alchemiq/blob/main/LICENSE)
 [![Docs](https://readthedocs.org/projects/alchemiq/badge/?version=latest)](https://alchemiq.readthedocs.io)
 [![CI](https://github.com/TrifoN-off/alchemiq/actions/workflows/ci.yml/badge.svg)](https://github.com/TrifoN-off/alchemiq/actions)
 
@@ -90,8 +90,8 @@ Full guide and API reference: **<https://alchemiq.readthedocs.io>**
 ## Links
 
 - Source: <https://github.com/TrifoN-off/alchemiq>
-- Changelog: [CHANGELOG.md](CHANGELOG.md)
-- License: MIT - see [LICENSE](LICENSE)
+- Changelog: [CHANGELOG.md](https://github.com/TrifoN-off/alchemiq/blob/main/CHANGELOG.md)
+- License: MIT - see [LICENSE](https://github.com/TrifoN-off/alchemiq/blob/main/LICENSE)
 
 ---
 
