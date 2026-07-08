@@ -11,6 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- PSR inserts new releases above this line -->
 
+## v0.2.0 (2026-07-08)
+
+### Bug Fixes
+
+- Track imports for nested column types in migration autogen
+  ([`19c51b7`](https://github.com/TrifoN-off/alchemiq/commit/19c51b72ee91378c71c1cd5b23edd06c1a8b07d9))
+
+JSONB astext_type and ARRAY item_type rendered as bare Text()/Integer() with no import, so the first
+  migrate of any JSON/Array column raised NameError. Imports are now registered via
+  autogen_context.imports, including through Maybe[...] wrappers. No DDL change.
+
+### Documentation
+
+- Fixed readthedocs link
+  ([`a1a4c5e`](https://github.com/TrifoN-off/alchemiq/commit/a1a4c5ed6c1dbe685cb9e1f5a415535f292b757a))
+
+- Merge hand-written 0.1.0 notes into the release changelog entry
+  ([`4f2abb0`](https://github.com/TrifoN-off/alchemiq/commit/4f2abb0608c9d986ccbc6a3c47e5ae9ed2ba62bb))
+
+### Features
+
+- Add SQLite support (dev/test tier)
+  ([`905f69f`](https://github.com/TrifoN-off/alchemiq/commit/905f69f42201bf98bbc547dddfcc26328f6a0541))
+
+New [sqlite] extra (aiosqlite): SQLite is now a supported dialect for development, tests, and
+  embedded use. Column types gain SQLite variants (UUID -> CHAR(32), JSONB -> JSON, aware datetimes,
+  INTEGER pk), bulk_upsert dispatches to the SQLite ON CONFLICT insert, migrations accept a dsn key
+  and use Alembic batch mode, and PG-only features (Array, .explain, multi-worker relay) refuse
+  loudly. PostgreSQL stays the production target; see docs/guide/sqlite.md for the feature matrix.
+
+
 ## v0.1.0 (2026-07-05)
 
 Initial public release
