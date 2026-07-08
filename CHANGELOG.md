@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- PSR inserts new releases above this line -->
 
+## v0.2.1 (2026-07-08)
+
+### Bug Fixes
+
+- Use absolute GitHub links in README for PyPI rendering
+  ([`499d01b`](https://github.com/TrifoN-off/alchemiq/commit/499d01b67471c9aeb1bc6f0e2376e01174c15cc7))
+
+
 ## v0.2.0 (2026-07-08)
 
 ### Bug Fixes
