@@ -5,7 +5,8 @@ Usage::
     class User(Model):
         id: PK[int]
 
-``PK[int]`` returns a ``PK`` instance pre-configured as a BIGINT autoincrement primary key.
+``PK[int]`` returns a ``PK`` instance pre-configured as a BIGINT autoincrement primary key
+(INTEGER on SQLite, where only INTEGER PRIMARY KEY autoincrements).
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ import uuid
 from functools import partial
 from typing import Any
 
-from sqlalchemy import BigInteger, String
+from sqlalchemy import BigInteger, Integer, String, Uuid
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.types import TypeEngine
 
@@ -24,7 +25,7 @@ from alchemiq.types.base import FieldType
 
 
 class PK[T](FieldType[T]):
-    """Primary key. ``PK[int]`` -> BIGINT autoincrement."""
+    """Primary key. ``PK[int]`` -> BIGINT autoincrement (INTEGER on SQLite)."""
 
     python_type = int
 
@@ -38,8 +39,8 @@ class PK[T](FieldType[T]):
         return cls(item)
 
     def column_type(self) -> TypeEngine[Any]:
-        """Return ``BigInteger``."""
-        return BigInteger()
+        """Return ``BigInteger`` (``INTEGER`` on SQLite for autoincrement)."""
+        return BigInteger().with_variant(Integer(), "sqlite")
 
 
 class UUID4(FieldType[uuid.UUID]):
@@ -52,8 +53,8 @@ class UUID4(FieldType[uuid.UUID]):
         super().__init__(default=uuid.uuid4, **kw)
 
     def column_type(self) -> TypeEngine[Any]:
-        """Return ``PgUUID(as_uuid=True)``."""
-        return PgUUID(as_uuid=True)
+        """Return ``PgUUID(as_uuid=True)`` (``CHAR(32)`` string storage on SQLite)."""
+        return PgUUID(as_uuid=True).with_variant(Uuid(native_uuid=False), "sqlite")
 
 
 class UUID7(FieldType[uuid.UUID]):
@@ -65,8 +66,8 @@ class UUID7(FieldType[uuid.UUID]):
         super().__init__(default=uuid7, **kw)
 
     def column_type(self) -> TypeEngine[Any]:
-        """Return ``PgUUID(as_uuid=True)``."""
-        return PgUUID(as_uuid=True)
+        """Return ``PgUUID(as_uuid=True)`` (``CHAR(32)`` string storage on SQLite)."""
+        return PgUUID(as_uuid=True).with_variant(Uuid(native_uuid=False), "sqlite")
 
 
 class NanoID(FieldType[str]):

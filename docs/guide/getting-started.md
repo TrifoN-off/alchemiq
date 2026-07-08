@@ -28,8 +28,23 @@ pip install "alchemiq[postgres]"
 | `faststream` | FastStream publisher + consumer DI (`faststream`) |
 | `redis` | Repository-level Redis caching (`redis`) |
 | `postgres` | Async PostgreSQL driver (`asyncpg`) |
+| `sqlite` | Async SQLite driver (`aiosqlite`) - dev/test tier |
 | `clickhouse` | ClickHouse models + repository (`clickhouse-connect[async]`, `clickhouse-sqlalchemy`) |
 | `migrations` | Alembic-based migration CLI (`alembic`) |
+
+## Trying it without PostgreSQL
+
+For a quick local start or containerless tests, alchemiq also runs on SQLite:
+
+```bash
+pip install alchemiq[sqlite]
+```
+
+```python
+alchemiq.configure("sqlite:///./dev.db")
+```
+
+See [SQLite (dev and test tier)](sqlite.md) for what is and is not supported.
 
 ## Minimal end-to-end example
 

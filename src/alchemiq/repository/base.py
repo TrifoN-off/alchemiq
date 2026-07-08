@@ -515,7 +515,9 @@ class Repository(Generic[M]):  # noqa: UP046
         update_fields: Sequence[str] | None = None,
         ignore_conflicts: bool = False,
     ) -> int:
-        """Idempotent batch ``INSERT ... ON CONFLICT`` (PostgreSQL). Returns the affected rowcount.
+        """Idempotent batch ``INSERT ... ON CONFLICT`` (PostgreSQL / SQLite).
+
+        Returns the affected rowcount.
 
         ``conflict`` defaults to the PK column(s); ``update_fields`` defaults to all sent
         non-conflict columns.  ``ignore_conflicts=True`` emits ``DO NOTHING`` instead of
@@ -547,7 +549,9 @@ class Repository(Generic[M]):  # noqa: UP046
             return 0
         from sqlalchemy.engine import CursorResult
 
+        from alchemiq._internal.dialect import insert_for
         from alchemiq.repository.upsert import build_upsert
+        from alchemiq.runtime.engine import require_engine
 
         cache = self._resolve_cache()
         stmt = build_upsert(
@@ -556,6 +560,7 @@ class Repository(Generic[M]):  # noqa: UP046
             conflict=conflict,
             update_fields=update_fields,
             ignore_conflicts=ignore_conflicts,
+            insert_fn=insert_for(require_engine()),
         )
         async with session_scope(write=True) as session:
             result = cast(CursorResult[Any], await session.execute(stmt))

@@ -5,12 +5,15 @@ from __future__ import annotations
 import enum as _enum
 from typing import Any
 
+from sqlalchemy import JSON as SaJSON
 from sqlalchemy import Enum as SaEnum
 from sqlalchemy import LargeBinary
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.types import TypeDecorator, TypeEngine
 
-from alchemiq.exceptions import ValidationError
+from alchemiq._internal.dialect import _MATRIX_HINT
+from alchemiq.exceptions import ConfigError, ValidationError
 from alchemiq.types.base import FieldType
 
 
@@ -28,8 +31,8 @@ class JSON(FieldType[dict]):
         self.model = model
 
     def column_type(self) -> TypeEngine[Any]:
-        """Return ``JSONB``."""
-        return JSONB()
+        """Return ``JSONB`` (plain ``JSON`` on SQLite)."""
+        return JSONB().with_variant(SaJSON(), "sqlite")
 
     def validate(self, value: Any) -> Any:
         """Validate ``value`` against the Pydantic model if one was provided."""
@@ -49,6 +52,8 @@ class Array[T](FieldType[list[T]]):
     """PostgreSQL ``ARRAY`` column; each element is validated via the inner field.
 
     Use ``Array[int]`` sugar or ``Array(inner_field)`` for custom inner types.
+
+    PostgreSQL-only: creating an ``Array`` column on SQLite raises ``ConfigError``.
     """
 
     python_type = list
@@ -69,6 +74,14 @@ class Array[T](FieldType[list[T]]):
     def validate(self, value: Any) -> Any:
         """Validate each element through the inner field's ``validate`` method."""
         return [self.inner.validate(v) for v in value]
+
+
+@compiles(ARRAY, "sqlite")
+def _array_unsupported_on_sqlite(element: ARRAY, compiler: Any, **kw: Any) -> str:
+    """Replace SQLAlchemy's UnsupportedCompilationError with an actionable refusal."""
+    column = kw.get("type_expression")
+    where = f" (column {column.name!r})" if column is not None else ""
+    raise ConfigError(f"Array fields are PostgreSQL-only{where}; {_MATRIX_HINT}")
 
 
 class Enum[E: _enum.Enum](FieldType[E]):

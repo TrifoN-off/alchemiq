@@ -1,4 +1,4 @@
-"""PostgreSQL ``INSERT ... ON CONFLICT`` statement builder for bulk_upsert."""
+"""Dialect-dispatched ``INSERT ... ON CONFLICT`` statement builder for bulk_upsert."""
 
 from __future__ import annotations
 
@@ -35,11 +35,15 @@ def build_upsert(
     conflict: Sequence[str] | None,
     update_fields: Sequence[str] | None,
     ignore_conflicts: bool,
+    insert_fn: Any = pg_insert,
 ) -> Any:
-    """Build a PG ``INSERT ... ON CONFLICT`` statement for *objs*.
+    """Build an ``INSERT ... ON CONFLICT`` statement for *objs*.
 
     The value-column set is the union of own columns populated across instances; every
     instance must populate that full set (heterogeneous rows raise ConfigError).
+
+    :param insert_fn: dialect ``insert()`` construct (PostgreSQL default; pass
+        the SQLite insert via ``alchemiq._internal.dialect.insert_for``).
     """
     own = _own_columns(model)
 
@@ -69,7 +73,7 @@ def build_upsert(
 
     ordered = list(value_cols)
     rows = [{c: getattr(obj, c) for c in ordered} for obj in objs]
-    stmt = pg_insert(model).values(rows)
+    stmt = insert_fn(model).values(rows)
     if ignore_conflicts or not update_cols:
         return stmt.on_conflict_do_nothing(index_elements=conflict_cols)
     return stmt.on_conflict_do_update(

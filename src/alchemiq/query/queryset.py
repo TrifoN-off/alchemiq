@@ -321,7 +321,8 @@ class QuerySet:
         ``SELECT`` inside a rolled-back transaction on PostgreSQL).
         ``format="json"`` returns the parsed JSON plan (a ``list``);
         ``format="text"`` returns the plan as a ``str``.  Always hits the
-        database - never cached.  PostgreSQL only.
+        database - never cached.  PostgreSQL only - raises ``QueryError`` on
+        any other dialect.
 
         E.g.::
 
@@ -331,11 +332,17 @@ class QuerySet:
         :param analyze: when ``True``, run ``EXPLAIN ANALYZE`` (real execution).
         :param format: ``"text"`` (default) or ``"json"``.
         :return: plan string (``format="text"``) or parsed list (``format="json"``).
+        :raises QueryError: when the configured engine is not PostgreSQL.
         """
         import json
 
+        from alchemiq._internal.dialect import require_postgres
+        from alchemiq.exceptions import QueryError
         from alchemiq.query.explain import _Explain
+        from alchemiq.runtime.engine import require_engine
         from alchemiq.runtime.session import session_scope
+
+        require_postgres("QuerySet.explain()", require_engine(), exc=QueryError)
 
         stmt = _Explain(self.compile(), analyze=analyze, fmt=format)
         async with session_scope(write=False) as session:

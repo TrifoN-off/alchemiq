@@ -46,17 +46,27 @@ def _interpolate(value: Any) -> Any:
 
 @dataclass(frozen=True)
 class PostgresSettings:
-    """Parsed [tool.alchemiq.postgres] connection settings."""
+    """Parsed [tool.alchemiq.postgres] connection settings.
 
-    host: str
-    database: str
-    username: str
-    password: str
+    Either ``dsn`` (a complete async SQLAlchemy DSN - this is how SQLite
+    projects point the migration runner at their database) or the
+    host/database/username/password quartet is set, never both.
+    """
+
+    host: str = ""
+    database: str = ""
+    username: str = ""
+    password: str = ""
     port: int = 5432
+    dsn: str | None = None
 
     @property
     def url(self) -> str:
-        """Return an asyncpg DSN string suitable for SQLAlchemy async engines."""
+        """Return an async DSN string suitable for SQLAlchemy async engines."""
+        if self.dsn is not None:
+            from alchemiq.runtime.engine import _normalized_url
+
+            return _normalized_url(self.dsn).render_as_string(hide_password=False)
         return URL.create(
             "postgresql+asyncpg",
             username=self.username,
@@ -112,6 +122,14 @@ class AlchemiqConfig:
 def _parse_postgres(t: dict[str, Any] | None) -> PostgresSettings | None:
     if t is None:
         return None
+    if "dsn" in t:
+        overlap = {"host", "database", "username", "password", "port"} & t.keys()
+        if overlap:
+            raise MigrationConfigError(
+                "[tool.alchemiq.postgres] accepts either dsn or "
+                f"host/database/username/password, not both (got dsn + {sorted(overlap)})"
+            )
+        return PostgresSettings(dsn=_interpolate(t["dsn"]))
     try:
         return PostgresSettings(
             host=_interpolate(t["host"]),
@@ -162,7 +180,7 @@ def load_config(start: Path | None = None) -> AlchemiqConfig:
         raise MigrationConfigError("[tool.alchemiq] section not found in pyproject.toml")
     return AlchemiqConfig(
         root=pyproject.parent,
-        models=tuple(tool.get("models", ())),
+        models=tuple(_interpolate(m) for m in tool.get("models", ())),
         migrations_dir=tool.get("migrations_dir", "migrations"),
         postgres=_parse_postgres(tool.get("postgres")),
         clickhouse=_parse_clickhouse(tool.get("clickhouse")),

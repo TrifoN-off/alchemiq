@@ -52,6 +52,7 @@ print(found.name)  # Ada Lovelace
 - **Redis caching** - per-repository cache with automatic invalidation on write.
 - **Migrations** - Alembic wrapper for PostgreSQL; a custom engine for ClickHouse.
 - **Scaffolding** - `alchemiq init` generates a production-ready layered project skeleton.
+- **SQLite dev/test tier** - run your app's tests without Docker; PostgreSQL stays the production target.
 
 ---
 
@@ -73,6 +74,7 @@ pip install "alchemiq[all]"
 | `faststream` | `faststream` |
 | `redis` | `redis` |
 | `postgres` | `asyncpg` (the PostgreSQL driver) |
+| `sqlite` | `aiosqlite` (the SQLite driver, dev/test tier) |
 | `clickhouse` | `clickhouse-connect[async]`, `clickhouse-sqlalchemy` |
 | `migrations` | `alembic` |
 | `all` | all of the above except `bcrypt` |
@@ -95,8 +97,9 @@ Full guide and API reference: **<https://alchemiq.readthedocs.io>**
 
 ## What's not in v1
 
-`alchemiq` v1 does not include a visual admin, MySQL/SQLite support, synchronous mode,
+`alchemiq` v1 does not include a visual admin, MySQL support, synchronous mode,
 multi-database routing, audit logs, geolocation fields, or file-field storage adapters.
+SQLite is supported as a dev/test tier - see the [SQLite guide](https://alchemiq.readthedocs.io/en/latest/guide/sqlite.html).
 
 See the [What's not in v1](https://alchemiq.readthedocs.io/en/latest/guide/whats-not-in-v1.html) guide
 for the full list and the reasoning behind each deferral.

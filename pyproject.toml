@@ -36,10 +36,11 @@ fastapi = ["fastapi>=0.110"]
 faststream = ["faststream>=0.5"]
 redis = ["redis>=5.0"]
 postgres = ["asyncpg>=0.29"]
+sqlite = ["aiosqlite>=0.20"]
 clickhouse = ["clickhouse-connect[async]>=0.8", "clickhouse-sqlalchemy>=0.3"]
 migrations = ["alembic>=1.13"]
 all = [
-    "alchemiq[email,phone,argon2,crypto,outbox,fastapi,faststream,redis,postgres,clickhouse,migrations]",
+    "alchemiq[email,phone,argon2,crypto,outbox,fastapi,faststream,redis,postgres,sqlite,clickhouse,migrations]",
 ]
 
 [project.scripts]
@@ -92,7 +93,12 @@ asyncio_mode = "auto"
 addopts = "--strict-markers"
 testpaths = ["tests"]
 pythonpath = ["src"]
-markers = ["unit: no DB", "integration: requires PostgreSQL", "clickhouse: requires ClickHouse"]
+markers = [
+    "unit: no DB",
+    "integration: requires PostgreSQL",
+    "clickhouse: requires ClickHouse",
+    "sqlite: requires SQLite (aiosqlite, no server)",
+]
 
 [tool.ruff]
 line-length = 100

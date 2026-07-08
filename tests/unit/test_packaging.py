@@ -51,6 +51,9 @@ def test_optional_dependencies_ship_working_drivers() -> None:
     assert any(dep.startswith("clickhouse-connect[async]") for dep in extras["clickhouse"])
     # [all] must include the postgres driver extra.
     assert any("postgres" in dep for dep in extras["all"])
+    # The sqlite extra must ship the async driver, and [all] must include it.
+    assert any(dep.startswith("aiosqlite") for dep in extras["sqlite"])
+    assert any("sqlite" in dep for dep in extras["all"])
 
 
 def test_scaffold_templates_are_shipped() -> None:

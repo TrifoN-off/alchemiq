@@ -21,6 +21,9 @@ def do_run_migrations(connection: Connection) -> None:
         target_metadata=target_metadata,
         render_item=render_item,
         compare_type=True,
+        # SQLite cannot ALTER most things in place; batch mode makes autogen
+        # emit batch_alter_table blocks (a no-op flag for PostgreSQL).
+        render_as_batch=connection.dialect.name == "sqlite",
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -43,6 +46,7 @@ def run_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
+        render_as_batch=url.startswith("sqlite"),
     )
     with context.begin_transaction():
         context.run_migrations()
