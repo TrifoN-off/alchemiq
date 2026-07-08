@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- PSR inserts new releases above this line -->
 
+## v0.2.2 (2026-07-08)
+
+### Bug Fixes
+
+- Sync uv.lock's alchemiq self-version inside PSR build_command
+  ([`38ddd76`](https://github.com/TrifoN-off/alchemiq/commit/38ddd76a348cd5cf555ddea1326e777c82a5c9bc))
+
+### Chores
+
+- Sync uv.lock alchemiq self-version to 0.2.1
+  ([`ea6f797`](https://github.com/TrifoN-off/alchemiq/commit/ea6f797148615b2abd82c8d8a8190872534fd175))
+
+### Testing
+
+- Assert version lockstep with pyproject instead of a hardcoded number
+  ([`70d3100`](https://github.com/TrifoN-off/alchemiq/commit/70d3100ca5ca85fe7f91aafb2b17dcb614617263))
+
+
 ## v0.2.1 (2026-07-08)
 
 ### Bug Fixes

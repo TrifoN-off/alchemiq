@@ -22,7 +22,7 @@ from alchemiq.repository.pagination import CursorPage, Page
 from alchemiq.runtime import UnitOfWork, configure, create_all, dispose, drop_all
 from alchemiq.types import Field
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 __all__ = [
     "Model",
     "Field",

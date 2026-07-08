@@ -1,6 +1,6 @@
 [project]
 name = "alchemiq"
-version = "0.2.1"
+version = "0.2.2"
 description = "The data layer for async FastAPI microservices: Django-style models, transactional outbox, caching, and ClickHouse - built on SQLAlchemy 2.0"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -52,6 +52,7 @@ Documentation = "https://alchemiq.readthedocs.io"
 Repository = "https://github.com/TrifoN-off/alchemiq"
 Issues = "https://github.com/TrifoN-off/alchemiq/issues"
 Changelog = "https://github.com/TrifoN-off/alchemiq/blob/main/CHANGELOG.md"
+
 
 
 
