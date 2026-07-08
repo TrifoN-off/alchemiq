@@ -3,7 +3,7 @@ import pytest
 from alchemiq.migrations.postgres.render import render_item
 from alchemiq.types.maybe import _MaybeType
 from alchemiq.types.numeric import MinorUnits, Positive
-from alchemiq.types.special import _EncryptedType
+from alchemiq.types.special import JSON, _EncryptedType
 from alchemiq.types.temporal import EpochInt
 
 pytestmark = pytest.mark.unit
@@ -53,10 +53,48 @@ def test_render_item_handles_maybe_type() -> None:
     assert isinstance(out, str) and out, "expected non-empty str for _MaybeType"
 
 
+def test_render_item_tracks_imports_through_maybe_wrapper() -> None:
+    """Maybe[JSON] renders through impl_instance (a JSONB) - the nested-import
+    scan must run against that target, not the outer _MaybeType, or the
+    generated migration NameErrors on the bare 'Text()' baked into JSONB's repr."""
+    ctx = _Ctx()
+    out = render_item("type", _MaybeType(JSON()), ctx)
+    assert isinstance(out, str) and "JSONB" in out
+    assert "from sqlalchemy import Text" in ctx.imports
+
+
 def test_render_item_defers_for_stock_types() -> None:
     from sqlalchemy import Integer
 
     assert render_item("type", Integer(), _Ctx()) is False
+
+
+def test_render_item_tracks_jsonb_astext_import() -> None:
+    """JSONB's default repr bakes in a bare 'Text()' - track its import or the
+    generated migration NameErrors the first time it actually runs."""
+    from sqlalchemy.dialects.postgresql import JSONB
+
+    ctx = _Ctx()
+    assert render_item("type", JSONB(), ctx) is False
+    assert "from sqlalchemy import Text" in ctx.imports
+
+
+def test_render_item_tracks_array_item_type_import() -> None:
+    """ARRAY's default repr bakes in a bare 'Integer()' for its item_type."""
+    from sqlalchemy import Integer
+    from sqlalchemy.dialects.postgresql import ARRAY
+
+    ctx = _Ctx()
+    assert render_item("type", ARRAY(Integer()), ctx) is False
+    assert "from sqlalchemy import Integer" in ctx.imports
+
+
+def test_render_item_leaves_unrelated_types_import_free() -> None:
+    from sqlalchemy import Integer
+
+    ctx = _Ctx()
+    render_item("type", Integer(), ctx)
+    assert ctx.imports == set()
 
 
 # --- backend unit tests (no real DB required) ---
