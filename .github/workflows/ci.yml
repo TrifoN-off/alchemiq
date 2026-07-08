@@ -53,6 +53,8 @@ jobs:
         run: uv sync --all-extras --group dev
       - name: Unit tests
         run: uv run --no-sync pytest -m unit --cov=alchemiq --cov-report=
+      - name: SQLite tests
+        run: uv run --no-sync pytest -m sqlite --cov=alchemiq --cov-report= --cov-append
       - name: Integration tests (PostgreSQL + Redis)
         run: uv run --no-sync pytest -m integration --cov=alchemiq --cov-report= --cov-append
       # File by file: a single-process `pytest -m clickhouse` run flakes on

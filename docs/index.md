@@ -75,6 +75,7 @@ guide/clickhouse
 guide/migrations
 guide/health
 guide/scaffolding
+guide/sqlite
 guide/whats-not-in-v1
 ```
 

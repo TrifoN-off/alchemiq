@@ -51,7 +51,19 @@ secure   = false                   # optional, defaults to false
 ```
 
 Either ``[tool.alchemiq.postgres]`` or ``[tool.alchemiq.clickhouse]`` (or both)
-can be present.  Sections that are absent are simply skipped.
+can be present.  Sections that are absent are simply skipped.  ``${VAR}``
+interpolation also applies to entries in the top-level ``models`` list, not
+just the connection settings.
+
+Instead of the host/database/username/password quartet you can supply a
+complete async DSN - this is also how SQLite projects configure the runner:
+
+```toml
+[tool.alchemiq.postgres]
+dsn = "sqlite+aiosqlite:///./dev.db"
+```
+
+`dsn` and the quartet are mutually exclusive.
 
 ---
 

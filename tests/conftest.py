@@ -15,16 +15,21 @@ from alchemiq.clickhouse.connection import configure_clickhouse, dispose_clickho
 from alchemiq.clickhouse.ddl import create_clickhouse_tables, drop_clickhouse_tables
 from alchemiq.model.registry import metadata
 
-_GROUP_MARKERS = frozenset({"unit", "integration", "clickhouse"})
-_DIR_TO_MARKER = {"unit": "unit", "integration": "integration", "clickhouse": "clickhouse"}
+_GROUP_MARKERS = frozenset({"unit", "integration", "clickhouse", "sqlite"})
+_DIR_TO_MARKER = {
+    "unit": "unit",
+    "integration": "integration",
+    "clickhouse": "clickhouse",
+    "sqlite": "sqlite",
+}
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     """Fill in a missing group marker from each test's directory.
 
-    The marker-grouped CI gate (`pytest -m unit|integration|clickhouse`) silently
+    The marker-grouped CI gate (`pytest -m unit|integration|clickhouse|sqlite`) silently
     deselects any test file that forgot its `pytestmark` line. Apply the directory's
-    marker only to tests that carry none of the three group markers; tests with an
+    marker only to tests that carry none of the group markers; tests with an
     explicit group marker are left untouched (so a unit-marked test under
     tests/clickhouse/ stays unit-only and is not pulled into the slow clickhouse group).
     """

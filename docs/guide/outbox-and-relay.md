@@ -133,6 +133,10 @@ Each cycle claims a batch of **both ``pending`` and ``failed`` rows** with
 ``FOR UPDATE SKIP LOCKED``.  This makes it safe to run multiple concurrent
 workers without double-delivery.
 
+On SQLite the relay works with **exactly one worker** (SQLite has no row
+locking, so the multi-worker `FOR UPDATE SKIP LOCKED` claim is a no-op there).
+See [SQLite (dev and test tier)](sqlite.md).
+
 ### Error taxonomy
 
 | Error type | Behaviour |
