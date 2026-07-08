@@ -142,9 +142,20 @@ major_on_zero = false
 # Explicit: the default flips between PSR v9 (true) and v10 (false); unset, the
 # v10 CLI would jump 0.1.0 straight to 1.0.0.
 allow_zero_version = true
-# Runs inside the PSR Docker action (python:3.13-bookworm) - uv is NOT available
-# there, so build with the stdlib-installable `build` frontend.
-build_command = "python -m pip install build && python -m build"
+# Runs inside the PSR Docker action (python:3.13-bookworm) - uv is NOT
+# preinstalled there, so we install it ourselves. PSR bumps the version in
+# version_toml/version_variables BEFORE build_command runs, but never touches
+# uv.lock's self-referencing "alchemiq" entry - `uv lock` resyncs that, and
+# `git add` stages it so it lands in PSR's own version-bump commit (PSR commits
+# whatever is in the index, not just the paths it explicitly adds). Build
+# itself stays on the stdlib `build` frontend since it doesn't need uv.
+build_command = """
+curl -LsSf https://astral.sh/uv/install.sh | sh
+. "$HOME/.local/bin/env"
+uv lock --upgrade-package alchemiq
+git add uv.lock
+python -m pip install build && python -m build
+"""
 commit_parser = "conventional"
 
 [tool.semantic_release.branches.main]
